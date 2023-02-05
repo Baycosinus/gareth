@@ -6,12 +6,6 @@ const apiKey = process.env.ETHERSCAN_API_KEY;
 const etherScanApi = process.env.ETHERSCAN_API_URL;
 const coingeckoApi = process.env.COINGECKO_EXCHANGE_URL;
 
-const parseAccount = (account) => {
-    console.log(apiKey);
-    console.log(etherScanApi);
-    return 0;
-}
-
 const parseMultipleAccounts = async (accounts) => {
     const url = `${etherScanApi}?module=account&action=balancemulti&address=${accounts.join(',')}&tag=latest&apikey=${apiKey}`;
     let res = [];
@@ -29,7 +23,7 @@ const parseMultipleAccounts = async (accounts) => {
 
     await axios.get(coingeckoApi)
         .then((response) => {
-            if(response.status == 200){
+            if(response.status == 200 && response.data.ethereum.usd){
                 exchangeRate = response.data.ethereum.usd;
             }
         })
@@ -46,6 +40,5 @@ const parseMultipleAccounts = async (accounts) => {
 }
 
 module.exports = {
-    parseAccount,
     parseMultipleAccounts
 }

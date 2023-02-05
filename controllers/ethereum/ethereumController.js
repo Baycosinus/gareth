@@ -9,9 +9,16 @@ const processEthereumAddresses = async (req, res, next) => {
 
     let addresses = req.body.addresses;
     response = await validateEthereumAddresses(response, addresses);
+
     if (response.validAddresses.length > 0) {
-        response.validAddresses = await etherScanService.parseMultipleAccounts(response.validAddresses);
+        try {
+            response.validAddresses = await etherScanService.parseMultipleAccounts(response.validAddresses);
+        } catch (error) {
+            throw error;
+        }
     }
+
+    response.validAddresses = response.validAddresses.sort(x => x.balanceInUSD).reverse();
     res.send(response);
 }
 
@@ -29,5 +36,6 @@ const validateEthereumAddresses = async (response, addresses) => {
 }
 
 module.exports = {
-    processEthereumAddresses
+    processEthereumAddresses,
+    validateEthereumAddresses
 }

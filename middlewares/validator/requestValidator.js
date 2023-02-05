@@ -36,6 +36,7 @@ const applyValidation = (req, validationRuleSet) => {
 }
 
 const validateBody = (req, bodyValidationRuleSet, errors) => {
+    console.log(req.body);
     bodyValidationRuleSet.forEach((rule) => {
         if (rule.required && !req.body[rule.name]) {
             errors.push(`${rule.name} is required`);
