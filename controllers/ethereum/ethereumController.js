@@ -1,5 +1,5 @@
 const web3 = require('web3');
-const etherScanService = require('../../services/etherScan/etherScanService');
+const ethereumService = require('../../services/ethereum/ethereumService');
 
 const processEthereumAddresses = async (req, res, next) => {
     let response = {
@@ -12,7 +12,7 @@ const processEthereumAddresses = async (req, res, next) => {
 
     if (response.validAddresses.length > 0) {
         try {
-            response.validAddresses = await etherScanService.parseMultipleAccounts(response.validAddresses);
+            response.validAddresses = await ethereumService.parseMultipleAccounts(response.validAddresses);
         } catch (error) {
             throw error;
         }
