@@ -18,7 +18,7 @@ const processEthereumAddresses = async (req, res, next) => {
         }
     }
 
-    response.validAddresses = response.validAddresses.sort(x => x.balanceInUSD).reverse();
+    response.validAddresses = response.validAddresses.sort(x => x.totalBalance).reverse();
     res.send(response);
 }
 
