@@ -14,6 +14,7 @@ const parseMultipleAccounts = async (accounts) => {
         validAddresses: []
     };
 
+    let promises = [];
     let res = [];
     let exchangeRate = 0;
 
@@ -27,29 +28,36 @@ const parseMultipleAccounts = async (accounts) => {
             throw error;
         });
 
+    // First loop
     for (let i = 0; i < accounts.length; i++) {
         const account = accounts[i];
-
         if (!web3.utils.isAddress(account)) {
             response.invalidAddresses.push(account);
             continue;
         }
 
-        const balance = web3.utils.fromWei(await web3.eth.getBalance(account), 'ether');
-        const balanceInUSD = balance * exchangeRate;
-        const tetherBalance = await parseTetherBalance(account);
-
-        res.push({
-            account: account,
-            balance: balance,
-            balanceInUSD: balanceInUSD,
-            tetherBalance: tetherBalance,
-            totalBalance: balanceInUSD + tetherBalance
-        });
+        // Pushing promises to an array to be resolved later, this is to avoid the loop being blocked.
+        promises.push(parseBalance(account, exchangeRate));
     }
 
-    response.validAddresses = res.sort(x => x.totalBalance).reverse();
+    res = await Promise.all(promises);
+
+    // Second loop, custom function invalidates reverse by implementing descending order
+    response.validAddresses = res.sort((a,b) => { return b.totalBalance - a.totalBalance; });
     return response;
+}
+
+const parseBalance = async (account, exchangeRate) => {
+    const ethBalance = await parseEtherBalance(account);
+    const ethBalanceinUSD = ethBalance * exchangeRate;
+    const tetherBalance = await parseTetherBalance(account);
+
+    return {
+        ethBalance: ethBalance,
+        ethBalanceInUSD: ethBalanceinUSD,
+        tetherBalance: tetherBalance,
+        totalBalance: ethBalanceinUSD + tetherBalance
+    }
 }
 
 const parseTetherBalance = async (account) => {
@@ -62,8 +70,11 @@ const parseTetherBalance = async (account) => {
     const decimals = await contract.methods.decimals().call();
     balance = res / (10**decimals);
     
-
     return balance;
+}
+
+const parseEtherBalance = async (account) => {
+    return web3.utils.fromWei(await web3.eth.getBalance(account), 'ether');
 }
 
 module.exports = {
